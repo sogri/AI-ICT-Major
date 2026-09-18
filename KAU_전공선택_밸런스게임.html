@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전공선택 밸런스게임 · 한국항공대 AI융합ICT전공</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1c; --bg2:#0d1730; --card:#131f3d; --card2:#18264a;
+  --line:rgba(255,255,255,.12);
+  --tx:#eef3ff; --tx2:#9fb0d0; --tx3:#6f81a5;
+  --cy:#25d2ff; --cy2:#0aa8d8; --am:#ffab2e; --gr:#3ee6a4; --pk:#ff5f9e;
+  --ict:#25d2ff;
+  --ff:'Noto Sans KR',"맑은 고딕","Malgun Gothic",system-ui,-apple-system,sans-serif;
+}
+:root:not([data-theme="light"]){color-scheme:dark}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 12% -8%, rgba(37,210,255,.20), transparent 60%),
+    radial-gradient(820px 520px at 92% 4%, rgba(255,171,46,.14), transparent 62%),
+    radial-gradient(700px 700px at 50% 110%, rgba(62,230,164,.10), transparent 60%);
+  color:var(--tx); font-family:var(--ff); -webkit-font-smoothing:antialiased;
+  padding:22px 16px 56px;
+}
+.wrap{max-width:1000px;margin:0 auto}
+
+/* ── header ── */
+.hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.brand{font-size:12px;letter-spacing:.16em;color:var(--tx3);font-weight:700}
+.chip{font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;
+  background:rgba(37,210,255,.12);color:var(--cy);border:1px solid rgba(37,210,255,.32)}
+.spacer{flex:1}
+.ghost{font-family:var(--ff);font-size:12.5px;font-weight:700;color:var(--tx2);cursor:pointer;
+  background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+.ghost:hover{color:var(--tx);border-color:rgba(37,210,255,.5)}
+
+/* ── screens ── */
+.screen{display:none;animation:fade .45s ease both}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+h1{font-size:clamp(30px,5.4vw,54px);font-weight:900;line-height:1.14;letter-spacing:-.02em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--cy),#8ef1ff 60%,var(--am));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin-top:14px;color:var(--tx2);font-size:clamp(14px,1.7vw,17px);line-height:1.7;max-width:660px}
+
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}
+@media (max-width:720px){.pick{grid-template-columns:1fr}}
+.mode{position:relative;text-align:left;cursor:pointer;border-radius:20px;padding:26px 24px 24px;
+  background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);
+  color:var(--tx);font-family:var(--ff);transition:.22s;overflow:hidden}
+.mode:hover{transform:translateY(-4px);border-color:rgba(37,210,255,.55);
+  box-shadow:0 18px 44px rgba(0,0,0,.45)}
+.mode .no{font-size:12px;font-weight:900;letter-spacing:.18em;color:var(--cy)}
+.mode h3{font-size:clamp(19px,2.4vw,24px);font-weight:900;margin:10px 0 8px;line-height:1.3}
+.mode p{font-size:13.5px;color:var(--tx2);line-height:1.65}
+.mode .em{position:absolute;right:18px;top:16px;font-size:34px;opacity:.5}
+.mode .go{margin-top:16px;display:inline-block;font-size:12.5px;font-weight:800;color:var(--am)}
+
+.note{margin-top:26px;font-size:12.5px;color:var(--tx3);line-height:1.8;
+  border-top:1px solid var(--line);padding-top:16px}
+
+/* ── quiz ── */
+.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden;margin-bottom:8px}
+.bar>i{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--cy),var(--gr));transition:width .35s ease}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--tx3);font-weight:700;margin-bottom:22px}
+.q{font-size:clamp(20px,3.1vw,31px);font-weight:900;line-height:1.38;letter-spacing:-.01em}
+.qtag{display:inline-block;font-size:11.5px;font-weight:800;color:var(--am);
+  background:rgba(255,171,46,.12);border:1px solid rgba(255,171,46,.3);
+  padding:4px 10px;border-radius:999px;margin-bottom:14px}
+.duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:14px;margin-top:26px}
+@media (max-width:760px){.duo{grid-template-columns:1fr;gap:12px}.vs{justify-self:center}}
+.opt{cursor:pointer;text-align:left;border-radius:18px;padding:24px 22px;min-height:160px;
+  background:linear-gradient(165deg,var(--card2),var(--card));border:1px solid var(--line);
+  color:var(--tx);font-family:var(--ff);transition:.18s;display:flex;flex-direction:column;gap:10px}
+.opt:hover{transform:translateY(-3px);border-color:rgba(37,210,255,.6);box-shadow:0 16px 36px rgba(0,0,0,.42)}
+.opt.b:hover{border-color:rgba(255,171,46,.65)}
+.opt .em{font-size:30px}
+.opt .t{font-size:clamp(16px,2.1vw,20px);font-weight:900;line-height:1.35}
+.opt .d{font-size:13px;color:var(--tx2);line-height:1.6}
+.vs{align-self:center;font-size:13px;font-weight:900;color:var(--tx3);letter-spacing:.1em;
+  border:1px solid var(--line);border-radius:999px;padding:9px 12px;background:rgba(255,255,255,.04)}
+
+/* ── college pick ── */
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.col{cursor:pointer;text-align:left;border-radius:18px;padding:22px 20px;
+  background:linear-gradient(165deg,var(--card2),var(--card));border:1px solid var(--line);
+  color:var(--tx);font-family:var(--ff);transition:.18s}
+.col:hover{transform:translateY(-3px);border-color:rgba(62,230,164,.55)}
+.col .em{font-size:26px}
+.col h4{font-size:17px;font-weight:900;margin:8px 0 6px}
+.col p{font-size:12.5px;color:var(--tx2);line-height:1.6}
+
+/* ── result ── */
+.rcard{border-radius:24px;padding:30px 28px;margin-top:8px;
+  background:linear-gradient(160deg,rgba(37,210,255,.14),var(--card) 55%);
+  border:1px solid rgba(37,210,255,.34);box-shadow:0 22px 60px rgba(0,0,0,.45)}
+.rkick{font-size:12px;font-weight:900;letter-spacing:.18em;color:var(--cy)}
+.rtitle{font-size:clamp(23px,3.6vw,38px);font-weight:900;line-height:1.24;margin:10px 0 6px}
+.rdesc{font-size:14.5px;color:var(--tx2);line-height:1.75;margin-top:10px}
+.combo{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:22px}
+@media (max-width:640px){.combo{grid-template-columns:1fr;}.plus{justify-self:center}}
+.mj{border-radius:16px;padding:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.mj.hi{background:linear-gradient(150deg,rgba(37,210,255,.22),rgba(37,210,255,.06));
+  border-color:rgba(37,210,255,.55)}
+.mj .lb{font-size:11.5px;font-weight:900;letter-spacing:.12em;color:var(--tx3)}
+.mj.hi .lb{color:var(--cy)}
+.mj .nm{font-size:clamp(17px,2.3vw,22px);font-weight:900;margin-top:7px;line-height:1.3}
+.mj .rs{font-size:12.5px;color:var(--tx2);margin-top:8px;line-height:1.6}
+.plus{font-size:22px;font-weight:900;color:var(--tx3);text-align:center}
+
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.tag{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--tx2)}
+.scores{margin-top:24px;display:grid;gap:10px}
+.srow{display:grid;grid-template-columns:104px 1fr 34px;gap:10px;align-items:center;font-size:12.5px}
+.srow .n{color:var(--tx2);font-weight:700}
+.srow .v{font-weight:900;color:var(--tx);text-align:right}
+.sbar{height:9px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.sbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cy2),var(--cy))}
+
+.panel{margin-top:16px;border-radius:20px;padding:24px;background:var(--card);border:1px solid var(--line)}
+.panel h4{font-size:15.5px;font-weight:900;margin-bottom:12px}
+.panel ul{list-style:none;display:grid;gap:9px}
+.panel li{font-size:13.5px;color:var(--tx2);line-height:1.65;padding-left:20px;position:relative}
+.panel li:before{content:"";position:absolute;left:2px;top:8px;width:7px;height:7px;border-radius:99px;
+  background:var(--cy)}
+.panel li b{color:var(--tx)}
+.jobs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.job{font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;
+  background:rgba(255,171,46,.1);border:1px solid rgba(255,171,46,.28);color:#ffc873}
+
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.btn{font-family:var(--ff);font-size:13.5px;font-weight:800;padding:13px 22px;border-radius:999px;
+  cursor:pointer;border:0;background:linear-gradient(95deg,var(--cy),#66e3ff);color:#04243a;transition:.18s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(37,210,255,.32)}
+.btn.o{background:transparent;color:var(--tx2);border:1px solid var(--line)}
+.btn.o:hover{color:var(--tx);border-color:rgba(37,210,255,.5);box-shadow:none}
+
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--tx3);line-height:1.85}
+.foot b{color:var(--tx2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hd">
+    <span class="brand">KOREA AEROSPACE UNIVERSITY</span>
+    <span class="chip">AI융합ICT전공 · AI-ICT Convergence Major</span>
+    <span class="spacer"></span>
+    <button class="ghost" id="home">처음으로</button>
+  </div>
+
+  <!-- ══ 0. INTRO ══ -->
+  <section class="screen on" id="s-intro">
+    <h1>전공 2개, 어떻게 고르지?<br><em>밸런스게임</em>으로 3분 만에.</h1>
+    <p class="sub">
+      2025학번부터 모든 학생은 <b>제1전공 + 제2전공</b>을 이수합니다.
+      질문마다 더 끌리는 쪽을 누르세요. 마지막에 나에게 맞는 <b>전공 조합</b>과
+      그 조합으로 갈 수 있는 <b>직무·기업</b>을 알려줍니다.
+    </p>
+
+    <div class="pick">
+      <button class="mode" data-mode="A">
+        <span class="em">🧠</span>
+        <span class="no">GAME 01</span>
+        <h3>AI융합대학으로<br>입학한 학생용</h3>
+        <p>제1전공은 <b>AI융합대학 내 5개 전공</b>에서 먼저 고릅니다.<br>
+        인공지능 · 컴퓨터공학 · 반도체시스템 · 전자및항공전자 · AI융합ICT</p>
+        <span class="go">10문항 · 약 3분 →</span>
+      </button>
+      <button class="mode" data-mode="B">
+        <span class="em">🚀</span>
+        <span class="no">GAME 02</span>
+        <h3>타 단과대학으로<br>입학한 학생용</h3>
+        <p>제1전공은 <b>내 단과대학 안에서</b>, 제2전공은 <b>항공운항학과를 뺀 모든 전공</b>에서.<br>
+        공과대학 · 항공·경영대학 · 자유전공학부 모두 해당</p>
+        <span class="go">10문항 · 약 3분 →</span>
+      </button>
+    </div>
+
+    <p class="note">
+      ※ 제1전공은 입학 시 소속 단과대학 내 전공에서, 제2전공은 항공운항학과를 제외한 <b>전교 모든 전공</b>에서 선택합니다.
+      즉 <b>경영전공·항공경영전공·물류전공·항공교통전공으로 입학한 학생도 AI융합ICT전공을 제2전공으로 신청할 수 있습니다.</b>
+      이 게임의 결과는 상담용 참고자료이며, 최종 이수 요건은 학사 공지를 확인하세요.
+    </p>
+  </section>
+
+  <!-- ══ 0-B. COLLEGE ══ -->
+  <section class="screen" id="s-college">
+    <span class="qtag">GAME 02 · 시작 전 한 가지</span>
+    <h2 class="q">내가 입학한 단과대학은?</h2>
+    <p class="sub" style="margin-top:12px">제1전공은 이 안에서 고르게 됩니다. 제2전공 추천은 여기서 달라집니다.</p>
+    <div class="cols" id="colbox"></div>
+  </section>
+
+  <!-- ══ 1. QUIZ ══ -->
+  <section class="screen" id="s-quiz">
+    <div class="bar"><i id="pbar"></i></div>
+    <div class="meta"><span id="pnum">Q1 / 10</span><span id="pmode">GAME</span></div>
+    <span class="qtag" id="qtag">밸런스</span>
+    <h2 class="q" id="qtext">질문</h2>
+    <div class="duo">
+      <button class="opt a" id="optA">
+        <span class="em" id="emA">🅐</span><span class="t" id="tA"></span><span class="d" id="dA"></span>
+      </button>
+      <span class="vs">VS</span>
+      <button class="opt b" id="optB">
+        <span class="em" id="emB">🅑</span><span class="t" id="tB"></span><span class="d" id="dB"></span>
+      </button>
+    </div>
+    <div class="btns"><button class="btn o" id="back">← 이전 질문</button></div>
+  </section>
+
+  <!-- ══ 2. RESULT ══ -->
+  <section class="screen" id="s-result">
+    <div class="rcard">
+      <div class="rkick" id="rkick">YOUR MATCH</div>
+      <div class="rtitle" id="rtitle"></div>
+      <div class="rdesc" id="rdesc"></div>
+      <div class="combo">
+        <div class="mj" id="mj1"><div class="lb">제1전공</div><div class="nm" id="nm1"></div><div class="rs" id="rs1"></div></div>
+        <div class="plus">＋</div>
+        <div class="mj" id="mj2"><div class="lb">제2전공</div><div class="nm" id="nm2"></div><div class="rs" id="rs2"></div></div>
+      </div>
+      <div class="tags" id="rtags"></div>
+      <div class="scores" id="rscores"></div>
+    </div>
+
+    <div class="panel">
+      <h4 id="wh">AI융합ICT전공을 함께 하면 이런 게 가능해집니다</h4>
+      <ul id="rwhy"></ul>
+      <div class="jobs" id="rjobs"></div>
+    </div>
+
+    <div class="btns">
+      <button class="btn" id="again">다시 해보기</button>
+      <button class="btn o" id="other">다른 게임 해보기</button>
+      <button class="btn o" id="copy">결과 복사하기</button>
+    </div>
+
+    <p class="foot">
+      <b>전공주임 최지훈 교수</b> · 전자관 211호 · 02-300-0417 · jihoon@kau.ac.kr (이메일로 상담예약 후 방문)<br>
+      <b>학과사무실 김지혜 선생님</b> · 전자관–기계관 사이 4층 통합 학과사무실 · 02-300-0120 · jhkim@kau.ac.kr<br>
+      <b>전공 홈페이지</b> · https://ict.kau.ac.kr/
+    </p>
+  </section>
+
+</div>
+
+<script>
+/* ═════════ 데이터 ═════════ */
+const AXES = {HW:"회로·칩 설계", SW:"코딩·소프트웨어", AI:"AI·데이터", SIG:"신호·통신·영상", SYS:"시스템 통합", BIZ:"기획·비즈니스"};
+
+const QA = [
+ {tag:"밸런스 01", q:"조별과제에서 나는…",
+  a:{em:"🔧", t:"직접 보드에 회로 꽂고<br>동작시키는 쪽", d:"눈에 보이는 하드웨어가 움직일 때 제일 재미있다", s:{HW:3,SYS:1}},
+  b:{em:"⌨️", t:"밤새 코드 짜서<br>돌아가게 만드는 쪽", d:"화면 안에서 내가 만든 로직이 돌아가는 게 좋다", s:{SW:3,AI:1}}},
+ {tag:"밸런스 02", q:"둘 중 하나만 평생 잘할 수 있다면?",
+  a:{em:"🧩", t:"알고리즘을 칩으로<br>만드는 능력", d:"수식 → 회로 → 반도체. AI 가속기, 모뎀, 영상 코덱", s:{HW:3,SIG:2}},
+  b:{em:"🤖", t:"모델을 학습시켜<br>정확도를 올리는 능력", d:"데이터를 넣고 성능 그래프를 끌어올린다", s:{AI:3,SW:1}}},
+ {tag:"밸런스 03", q:"더 멋있어 보이는 결과물은?",
+  a:{em:"📡", t:"드론·위성이 찍은 영상을<br>실시간으로 처리하는 시스템", d:"레이다/SAR, 영상압축, 무선통신", s:{SIG:3,SYS:1}},
+  b:{em:"☁️", t:"수천 대 서버가<br>동시에 돌아가는 AI 인프라", d:"분산 스토리지, 클라우드, LLM 추론 병렬화", s:{SW:2,SYS:2,AI:1}}},
+ {tag:"밸런스 04", q:"반도체를 공부한다면 나는?",
+  a:{em:"🧪", t:"소재·공정·소자를<br>파고들고 싶다", d:"웨이퍼, 증착, 트랜지스터 물리", s:{HW:1}},
+  b:{em:"🧠", t:"연산기와 시스템을<br>설계하고 싶다", d:"NPU/AI 가속기, 디지털시스템설계, RTL, FPGA", s:{HW:3,SYS:2}}},
+ {tag:"밸런스 05", q:"내가 일하고 싶은 회사 분위기는?",
+  a:{em:"🛡️", t:"방산·항공우주<br>무기체계와 위성", d:"한화시스템 · 한화에어로스페이스 · LIG D&A · KAI · 쎄트렉아이", s:{SIG:2,SYS:2,HW:1}},
+  b:{em:"💻", t:"플랫폼·AI 서비스\n빠른 개발 문화", d:"네이버 · 카카오 · 넥슨 · AI 스타트업", s:{SW:3,AI:1}}},
+ {tag:"밸런스 06", q:"4학년 캡스톤 주제를 고른다면?",
+  a:{em:"🚁", t:"드론에 센서를 달아<br>물체를 찾아내는 시스템", d:"센서 + 임베디드 + 신호처리 + 통신", s:{SIG:2,SYS:2,HW:1}},
+  b:{em:"📱", t:"쓸 만한 앱/서비스를<br>실제로 출시하기", d:"기획 + 서버 + 프론트 + 배포", s:{SW:2,BIZ:2}}},
+ {tag:"밸런스 07", q:"10년 뒤 내 명함에 찍히고 싶은 직함은?",
+  a:{em:"🏗️", t:"시스템 아키텍트", d:"하드웨어와 소프트웨어를 다 알고 전체 그림을 그린다", s:{SYS:3,HW:1,SW:1}},
+  b:{em:"🔬", t:"AI 리서치 엔지니어", d:"한 분야를 끝까지 깊게 판다", s:{AI:3}}},
+ {tag:"밸런스 08", q:"수업에서 더 견딜 수 있는 쪽은?",
+  a:{em:"📐", t:"수식과 신호가<br>가득한 과목", d:"신호및시스템, 통신시스템, 디지털신호처리", s:{SIG:3}},
+  b:{em:"🗂️", t:"자료구조와 설계 패턴이<br>가득한 과목", d:"자료구조, 알고리즘, 운영체제", s:{SW:3}}},
+ {tag:"밸런스 09", q:"취업 전략, 어느 쪽?",
+  a:{em:"🎯", t:"한 분야의 최고 전문가", d:"좁고 깊게. 그 분야에서는 대체 불가", s:{AI:2,SIG:1}},
+  b:{em:"🌐", t:"여러 산업에 다 지원 가능한<br>넓은 스펙트럼", d:"반도체·통신·방산·자동차·SW·금융 어디든 문이 열린다", s:{SYS:3,HW:1,SW:1}}},
+ {tag:"밸런스 10", q:"마지막. 내가 만든 기술이 쓰이길 바라는 곳은?",
+  a:{em:"🛰️", t:"하늘과 우주<br>항공기·위성·드론", d:"항공전자, 위성 탑재체, UAM 통신", s:{SIG:2,SYS:2}},
+  b:{em:"🏙️", t:"사람들의 일상<br>스마트폰·자동차·데이터센터", d:"AP, 카메라, 자율주행, AI 서버", s:{HW:2,SW:1,AI:1}}}
+];
+
+const QB = [
+ {tag:"밸런스 01", q:"내 전공 수업을 듣다가 이런 생각을 한 적 있다면?",
+  a:{em:"💡", t:"\"이거 자동화하면<br>훨씬 빠를 텐데\"", d:"반복 작업을 코드로 바꾸고 싶었다", s:{SW:3,AI:1}},
+  b:{em:"📊", t:"\"이 데이터 분석하면<br>답이 나올 텐데\"", d:"숫자에서 패턴을 찾고 싶었다", s:{AI:3,BIZ:1}}},
+ {tag:"밸런스 02", q:"내 제1전공 분야에서 앞으로 몸값이 오를 사람은?",
+  a:{em:"🧠", t:"그 분야 + AI/ICT를<br>같이 아는 사람", d:"도메인 지식에 기술을 얹는다", s:{SYS:3,AI:1,SW:1}},
+  b:{em:"📚", t:"그 분야만<br>깊게 아는 사람", d:"전통적인 전문가 경로", s:{BIZ:1}}},
+ {tag:"밸런스 03", q:"둘 중 하나만 이력서에 쓸 수 있다면?",
+  a:{em:"⌨️", t:"파이썬·C로 직접 만든<br>프로젝트 3개", d:"돌아가는 결과물이 있다", s:{SW:3,SYS:1}},
+  b:{em:"🏅", t:"관련 자격증과<br>높은 학점", d:"서류상 스펙이 단단하다", s:{BIZ:2}}},
+ {tag:"밸런스 04", q:"입사 후 하고 싶은 일은?",
+  a:{em:"🛠️", t:"제품/시스템을<br>직접 만드는 개발 직무", d:"HW·SW·시스템 엔지니어", s:{HW:2,SW:2,SYS:1}},
+  b:{em:"🧭", t:"기술을 이해하고<br>사업을 설계하는 직무", d:"기술기획, 데이터기획, DT추진", s:{BIZ:3,AI:1}}},
+ {tag:"밸런스 05", q:"요즘 채용공고를 보면 마음이 가는 쪽은?",
+  a:{em:"🛡️", t:"방산·항공우주<br>(한화 · LIG D&A · KAI · 쎄트렉아이)", d:"무기체계·위성에도 결국 통신·SW·임베디드가 들어간다", s:{SIG:2,SYS:2}},
+  b:{em:"🏦", t:"금융권 디지털·ICT 수시채용<br>(은행 · 증권 · 카드)", d:"은행 채용의 중심이 창구에서 개발자로 옮겨가고 있다", s:{SW:2,BIZ:2,AI:1}}},
+ {tag:"밸런스 06", q:"제2전공에 바라는 것은?",
+  a:{em:"🌐", t:"취업 문이<br>여러 산업으로 열리는 것", d:"반도체·통신·방산·자동차·SW·금융", s:{SYS:3,HW:1}},
+  b:{em:"🎯", t:"제1전공과 딱 붙는<br>한 가지 무기", d:"내 분야에서 확실한 차별점", s:{AI:2,SIG:1}}},
+ {tag:"밸런스 07", q:"공부 스타일은?",
+  a:{em:"🔧", t:"만들면서 배운다", d:"보드 꽂고, 코드 돌리고, 실패하며 익힌다", s:{HW:2,SW:2,SYS:1}},
+  b:{em:"📐", t:"원리부터 정리한다", d:"수식과 구조를 먼저 이해한다", s:{SIG:2,AI:1}}},
+ {tag:"밸런스 08", q:"AI가 더 발전한 10년 뒤, 안전한 사람은?",
+  a:{em:"🏗️", t:"AI가 돌아가는<br>시스템을 만드는 사람", d:"반도체·서버·네트워크·임베디드 = ICT시스템", s:{SYS:3,HW:1}},
+  b:{em:"🎨", t:"AI를 잘 쓰는<br>기획·창작하는 사람", d:"도구를 능숙하게 활용한다", s:{BIZ:3}}},
+ {tag:"밸런스 09", q:"졸업 전에 꼭 해보고 싶은 것은?",
+  a:{em:"🏭", t:"기업 현장실습<br>(장기·단기)", d:"실무를 먼저 경험하고 취업으로 연결", s:{SYS:2,BIZ:1}},
+  b:{em:"🔬", t:"연구실 인턴 / 대학원", d:"연구를 더 깊게 해보고 싶다", s:{AI:2,SIG:1}}},
+ {tag:"밸런스 10", q:"마지막. 5년 뒤 나를 소개하는 문장은?",
+  a:{em:"🤝", t:"\"제 분야를 기술로<br>번역할 수 있는 사람이에요\"", d:"도메인 + ICT 양쪽 언어를 쓴다", s:{SYS:2,SW:1,BIZ:1}},
+  b:{em:"⚡", t:"\"기술로 제품을<br>직접 만드는 사람이에요\"", d:"개발자·엔지니어로 승부한다", s:{SW:2,HW:1,SIG:1}}}
+];
+
+const COLLEGES = {
+  eng:{em:"🛩️", name:"공과대학", desc:"우주공학 · 항공공학 · 기계공학 · 우주항공신소재 · 반도체신소재 · 항공MRO",
+       first:["우주공학전공","항공공학전공","기계공학전공","우주항공신소재전공","반도체신소재전공","항공MRO전공"]},
+  biz:{em:"✈️", name:"항공·경영대학", desc:"항공교통 · 물류 · 경영 · 항공경영",
+       first:["항공교통전공","물류전공","경영전공","항공경영전공"]},
+  free:{em:"🧭", name:"자유전공학부", desc:"전 단과대학의 전공·학과를 제2전공으로 선택 가능",
+       first:["전교 모든 전공(항공운항학과는 별도 선발)"]}
+};
+
+/* 결과 정의 */
+const R_A = {
+  ictFirst:{
+    kick:"BEST MATCH · 제1전공 AI융합ICT",
+    title:"하드웨어도 소프트웨어도 놓치고 싶지 않은<br>“올라운드 플레이어” 형",
+    desc:"회로도 재미있고 코드도 재미있고, 결국 시스템 전체를 보고 싶은 사람입니다. AI융합ICT전공은 ICT시스템의 HW와 SW를 통합해 가르치는 전공이라 딱 맞습니다.",
+    m1:"AI융합ICT전공", r1:"ICT 하드웨어 + 소프트웨어 + AI융합응용을 한 전공에서",
+    m2:"반도체시스템전공 또는 전자및항공전자전공", r2:"칩 설계나 항공전자로 깊이를 더한다",
+    hi:1},
+  semi:{
+    kick:"BEST MATCH · 칩을 만드는 사람",
+    title:"알고리즘을 회로로 바꾸는<br>“시스템반도체 설계자” 형",
+    desc:"AI 가속기·모뎀·영상 코덱처럼 알고리즘을 칩에 집적하는 일이 맞습니다. 다만 칩 설계는 ‘무엇을 계산할지’를 알아야 하므로 ICT시스템 이론이 함께 필요합니다.",
+    m1:"반도체시스템전공", r1:"소자·공정·설계 전반의 반도체 기초",
+    m2:"AI융합ICT전공", r2:"디지털시스템설계 + 신호처리/통신/영상 알고리즘 = 설계할 대상을 아는 설계자",
+    hi:2},
+  cs:{
+    kick:"BEST MATCH · 소프트웨어로 승부",
+    title:"코드로 세상을 돌리는<br>“플랫폼·인프라 개발자” 형",
+    desc:"자료구조·알고리즘·운영체제가 즐거운 사람입니다. 여기에 ‘하드웨어를 아는 개발자’가 되면 임베디드·클라우드·AI 인프라까지 영역이 넓어집니다.",
+    m1:"컴퓨터공학전공", r1:"SW 개발의 정공법",
+    m2:"AI융합ICT전공", r2:"컴퓨터구조·임베디드·통신네트워크로 HW를 이해하는 개발자",
+    hi:2},
+  ee:{
+    kick:"BEST MATCH · 신호를 다루는 사람",
+    title:"보이지 않는 신호를 읽어내는<br>“항공전자·통신 엔지니어” 형",
+    desc:"레이다·SAR·무선통신처럼 수식과 신호가 있는 분야가 맞습니다. 방산·항공우주·통신 3개 산업이 동시에 열리는 경로입니다.",
+    m1:"전자및항공전자전공", r1:"항공전자·RF·회로의 정통 코스",
+    m2:"AI융합ICT전공", r2:"신호처리 알고리즘을 SW/칩으로 구현하는 능력까지",
+    hi:2},
+  ai:{
+    kick:"BEST MATCH · 모델을 만드는 사람",
+    title:"데이터로 답을 찾는<br>“AI 엔지니어” 형",
+    desc:"모델 성능을 끌어올리는 일이 즐거운 사람입니다. 다만 모델은 반도체·서버·네트워크 위에서 돌아갑니다. ICT시스템을 알면 ‘돌아가게 만드는 AI 엔지니어’가 됩니다.",
+    m1:"인공지능전공", r1:"머신러닝·딥러닝의 깊이",
+    m2:"AI융합ICT전공", r2:"AI가 실제로 동작하는 시스템(칩·엣지·네트워크)까지 설계",
+    hi:2}
+};
+
+const WHY_COMMON = [
+ "<b>ICT 하드웨어 + 소프트웨어 통합 교육</b> — 디지털시스템설계·컴퓨터구조·임베디드부터 자료구조·알고리즘·시스템프로그래밍까지 한 전공에서 이수",
+ "<b>AI융합 기반역량</b> — 머신러닝·딥러닝을 필수 트랙으로 포함",
+ "<b>ICT 핵심기술</b> — 신호및시스템, 통신시스템, 컴퓨터네트워크, 영상처리, 컴퓨터비전, 디지털신호처리, 지능센서공학",
+ "<b>현장실습 정규 교과</b> — 단기(3·4학년)·장기(4학년) 현장실습이 교육과정에 편성",
+ "<b>교수 19명 · NVIDIA H200 AI 클러스터 · 비디오 코덱 국제표준화</b> 등 연구 인프라를 학부 때부터 활용"
+];
+
+const JOBS = ["시스템반도체/NPU 설계","임베디드 SW","통신 모뎀/RF","영상·신호처리","자율주행 인지","위성 탑재체/지상국","레이다 신호처리","AI 인프라/클라우드","플랫폼 서버 개발","보안/네트워크","금융권 디지털·ICT","공기업 통신전자직"];
+
+/* ═════════ 엔진 ═════════ */
+const $ = id => document.getElementById(id);
+let mode="A", qs=QA, idx=0, hist=[], score={}, college=null;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
+function reset(){idx=0;hist=[];score={HW:0,SW:0,AI:0,SIG:0,SYS:0,BIZ:0};}
+
+function startMode(m){
+  mode=m; qs = (m==="A")?QA:QB; reset();
+  if(m==="B"){ buildColleges(); show('s-college'); } else { render(); show('s-quiz'); }
+}
+function buildColleges(){
+  const box=$('colbox'); box.innerHTML="";
+  Object.entries(COLLEGES).forEach(([k,c])=>{
+    const b=document.createElement('button'); b.className='col';
+    b.innerHTML=`<div class="em">${c.em}</div><h4>${c.name}</h4><p>${c.desc}</p>`;
+    b.onclick=()=>{college=k;render();show('s-quiz');};
+    box.appendChild(b);
+  });
+}
+function render(){
+  const q=qs[idx];
+  $('pbar').style.width = ((idx)/qs.length*100)+"%";
+  $('pnum').textContent = `Q${idx+1} / ${qs.length}`;
+  $('pmode').textContent = (mode==="A") ? "GAME 01 · AI융합대학 입학생" : "GAME 02 · " + COLLEGES[college].name;
+  $('qtag').textContent = q.tag;
+  $('qtext').innerHTML = q.q;
+  $('emA').textContent=q.a.em; $('tA').innerHTML=q.a.t; $('dA').innerHTML=q.a.d;
+  $('emB').textContent=q.b.em; $('tB').innerHTML=q.b.t; $('dB').innerHTML=q.b.d;
+  $('back').style.display = idx===0 ? "none" : "inline-block";
+}
+function choose(which){
+  const s=qs[idx][which].s;
+  hist.push(s);
+  Object.entries(s).forEach(([k,v])=>score[k]+=v);
+  idx++;
+  if(idx>=qs.length){ finish(); } else { render(); }
+}
+$('optA').onclick=()=>choose('a');
+$('optB').onclick=()=>choose('b');
+$('back').onclick=()=>{
+  if(!hist.length)return;
+  const s=hist.pop(); Object.entries(s).forEach(([k,v])=>score[k]-=v);
+  idx=Math.max(0,idx-1); render();
+};
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startMode(b.dataset.mode));
+$('home').onclick=()=>{show('s-intro')};
+$('again').onclick=()=>startMode(mode);
+$('other').onclick=()=>startMode(mode==="A"?"B":"A");
+
+function top2(){
+  return Object.entries(score).sort((x,y)=>y[1]-x[1]).map(e=>e[0]);
+}
+function finish(){
+  $('pbar').style.width="100%";
+  const o = top2(); const t1=o[0], t2=o[1];
+  let R;
+  if(mode==="A"){
+    if(score.SYS>=score.HW && score.SYS>=score.AI && (score.HW>0&&score.SW>0)) R=R_A.ictFirst;
+    else if(t1==="HW") R=R_A.semi;
+    else if(t1==="SW") R=R_A.cs;
+    else if(t1==="SIG") R=R_A.ee;
+    else if(t1==="AI") R=R_A.ai;
+    else R=R_A.ictFirst;
+    if(t1==="SYS"||t1==="BIZ") R=R_A.ictFirst;
+  }else{
+    R = buildB(t1,t2);
+  }
+  $('rkick').innerHTML=R.kick;
+  $('rtitle').innerHTML=R.title;
+  $('rdesc').innerHTML=R.desc;
+  $('nm1').textContent=R.m1; $('rs1').textContent=R.r1;
+  $('nm2').textContent=R.m2; $('rs2').textContent=R.r2;
+  $('mj1').className = 'mj'+(R.hi===1?' hi':'');
+  $('mj2').className = 'mj'+(R.hi===2?' hi':'');
+
+  $('rtags').innerHTML = [t1,t2].map(k=>`<span class="tag">#${AXES[k]}</span>`).join("")
+    + `<span class="tag">#AI융합ICT전공</span>`;
+
+  const max=Math.max(...Object.values(score),1);
+  $('rscores').innerHTML = Object.entries(score).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+    `<div class="srow"><span class="n">${AXES[k]}</span><span class="sbar"><i style="width:${Math.max(4,v/max*100)}%"></i></span><span class="v">${v}</span></div>`
+  ).join("");
+
+  const why = (R.why||[]).concat(WHY_COMMON).slice(0,6);
+  $('rwhy').innerHTML = why.map(w=>`<li>${w}</li>`).join("");
+  $('rjobs').innerHTML = JOBS.map(j=>`<span class="job">${j}</span>`).join("");
+  show('s-result');
+}
+
+function buildB(t1,t2){
+  const C=COLLEGES[college];
+  const pickFirst = {
+    eng:{HW:"항공공학전공 또는 우주공학전공",SW:"기계공학전공",AI:"우주공학전공",SIG:"항공공학전공",SYS:"기계공학전공 또는 항공MRO전공",BIZ:"항공MRO전공"},
+    biz:{HW:"항공교통전공",SW:"경영전공",AI:"물류전공",SIG:"항공교통전공",SYS:"물류전공",BIZ:"경영전공 또는 항공경영전공"},
+    free:{HW:"반도체시스템전공",SW:"컴퓨터공학전공",AI:"인공지능전공",SIG:"전자및항공전자전공",SYS:"AI융합ICT전공",BIZ:"경영전공"}
+  }[college];
+  const first = pickFirst[t1] || C.first[0];
+
+  const titles = {
+    HW:"내 전공에 ‘하드웨어 설계’를 붙이는<br>기술 융합형",
+    SW:"내 전공을 코드로 자동화하는<br>도메인 개발자형",
+    AI:"내 전공 데이터를 다루는<br>도메인 AI형",
+    SIG:"센서·통신으로 내 분야를 확장하는<br>시스템 엔지니어형",
+    SYS:"전공과 기술을 잇는<br>‘번역가’형 융합인재",
+    BIZ:"기술을 이해하는<br>기획·비즈니스형"
+  };
+  const why = {
+    eng:[
+      "<b>항공기·위성·발사체도 결국 ICT시스템 덩어리</b> — 비행제어컴퓨터, 항법·통신, 탑재 센서, 지상국 SW가 없으면 아무것도 날지 않습니다",
+      "<b>한화에어로스페이스·KAI·쎄트렉아이 채용공고</b>는 R&D 부문에서 기계/항공과 <b>전기·전자, SW/컴퓨터공학</b>을 나란히 모집합니다 — 두 전공을 다 가진 지원자가 유리",
+      "기계·항공 전공 + ICT = <b>무인기 자율비행, 위성 탑재체, MRO 진단시스템</b> 같은 요즘 뜨는 직무에 바로 매칭"
+    ],
+    biz:[
+      "<b>경영·항공경영·물류·항공교통으로 입학해도 AI융합ICT전공을 제2전공으로 신청할 수 있습니다</b> (제2전공은 항공운항학과를 제외한 전교 모든 전공에서 선택)",
+      "<b>은행 채용의 중심이 창구에서 개발자로</b> 이동 중 — 디지털·ICT 수시채용, 핀테크/데이터분석/블록체인/시스템관리 직군",
+      "물류·항공교통 + ICT = <b>SCM 데이터 플랫폼, 공항 시스템, 관제·감시 데이터</b> 분야에서 경영 언어와 기술 언어를 함께 쓰는 희소 인재"
+    ],
+    free:[
+      "자유전공학부는 <b>전 단과대학의 전공을 자유롭게 조합</b>할 수 있습니다 — 가장 폭이 넓은 선택지",
+      "AI융합ICT전공은 <b>전자및항공전자·컴퓨터공학·인공지능·반도체시스템전공과 다수 교과목을 공동개설</b>하므로, 어떤 전공과 함께 이수해도 학점 설계가 효율적입니다",
+      "<b>취업 스펙트럼</b>: 반도체·전자·통신·방산·항공우주·자동차·SW·플랫폼·금융·공기업까지 한 전공으로 커버"
+    ]
+  }[college];
+  return {
+    kick:"BEST MATCH · "+C.name+" 입학생",
+    title: titles[t1]||titles.SYS,
+    desc: "제1전공은 "+C.name+" 안에서 고르고, 제2전공으로 AI융합ICT전공을 얹는 조합입니다. 내 분야를 잘 아는 사람이 ICT시스템까지 다루면, 그 자리를 대체할 사람이 거의 없습니다.",
+    m1: first, r1: C.name+" 내에서 나와 가장 잘 맞는 전공",
+    m2: "AI융합ICT전공", r2:"ICT 하드웨어+소프트웨어+AI를 통합 이수 → 취업 스펙트럼 확장",
+    hi:2, why
+  };
+}
+
+$('copy').onclick=async()=>{
+  const txt = `[한국항공대 전공선택 밸런스게임 결과]\n`+
+    `${$('rkick').textContent}\n`+
+    `${$('rtitle').innerText}\n`+
+    `제1전공: ${$('nm1').textContent}\n제2전공: ${$('nm2').textContent}\n`+
+    `문의: 전공주임 최지훈 교수 jihoon@kau.ac.kr / https://ict.kau.ac.kr/`;
+  try{ await navigator.clipboard.writeText(txt); $('copy').textContent="복사됐어요 ✓"; }
+  catch(e){ $('copy').textContent="복사 실패 — 화면을 캡처해 주세요"; }
+  setTimeout(()=>$('copy').textContent="결과 복사하기",2200);
+};
+
+reset();
+</script>
+</body>
+</html>
